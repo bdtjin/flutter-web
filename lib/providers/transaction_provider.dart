@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/transaction.dart';
 
-final transactionProvider = StateNotifierProvider<TransactionNotifier, List<Transaction>>((ref) {
+final transactionProvider = NotifierProvider<TransactionNotifier, List<Transaction>>(() {
   return TransactionNotifier();
 });
 
-class TransactionNotifier extends StateNotifier<List<Transaction>> {
-  TransactionNotifier() : super([]) {
+class TransactionNotifier extends Notifier<List<Transaction>> {
+  @override
+  List<Transaction> build() {
     _loadTransactions();
+    return [];
   }
 
   static const String _key = 'transactions';
@@ -19,9 +21,10 @@ class TransactionNotifier extends StateNotifier<List<Transaction>> {
     final String? data = prefs.getString(_key);
     if (data != null) {
       final List<dynamic> jsonList = jsonDecode(data);
-      state = jsonList.map((json) => Transaction.fromJson(json)).toList();
+      final list = jsonList.map((json) => Transaction.fromJson(json)).toList();
       // 날짜 순 정렬 (최신순)
-      state.sort((a, b) => b.date.compareTo(a.date));
+      list.sort((a, b) => b.date.compareTo(a.date));
+      state = list;
     }
   }
 
